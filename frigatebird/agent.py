@@ -117,6 +117,10 @@ class Agent:
             if not calls:
                 # Schritt 3a: Kein Tool-Call = FINALE Antwort. Fertig!
                 self.history[-1]["content"] = reply["content"]
+                # Der UI Bescheid geben, dass es etwas anzuzeigen gibt.
+                # (Bugfix: wurde früher vergessen - die Antwort war da,
+                # aber niemand hat sie gezeichnet!)
+                self._emit("assistant_text", text=reply["content"])
                 return reply["content"]
 
             # Schritt 4: Das Modell WILL etwas tun. Jede Anfrage ausführen...
@@ -147,9 +151,13 @@ class Agent:
         # finale Antwort gefunden. Wir brechen ab, statt endlos weiterzulaufen.
         return "(reached max tool-call steps without a final answer)"
 
-    def _emit(self, kind, call=None, output="", is_error=False):
-        """Eine UI-Benachrichtigung über eine Loop-Stufe abgeben."""
-        self.on_event(AgentEvent(kind=kind, call=call, result=output, is_error=is_error))
+    def _emit(self, kind, call=None, output="", is_error=False, text=""):
+        """Eine UI-Benachrichtigung über eine Loop-Stufe abgeben.
+
+        text ist nur für kind="assistant_text" gefüllt; call/output/is_error
+        nur für tool_start/tool_end.
+        """
+        self.on_event(AgentEvent(kind=kind, call=call, result=output, is_error=is_error, text=text))
 
     def clear(self):
         """Konversation zurücksetzen (z.B. für das /clear-Kommando)."""

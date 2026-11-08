@@ -78,3 +78,23 @@ def test_denied_tool_still_gets_result():
 
 def test_bash_needs_approval():
     assert BashTool().needs_approval is True
+
+
+def test_final_answer_is_emitted_as_event():
+    """Regression: die CLI zeigt nur Events an - auch die FINALE Antwort
+    muss also als AgentEvent kommen (Bugfix 3eabc13 -> assistant_text)."""
+    provider = FakeProvider([
+        {"role": "assistant", "content": "die antwort", "tool_calls": []},
+    ])
+    registry = ToolRegistry()
+    registry.register(EchoTool())
+    agent = Agent(provider=provider, registry=registry)
+
+    events = []
+    agent.on_event = events.append
+    agent.send_user("frage")
+
+    kinds = [e.kind for e in events]
+    assert "assistant_text" in kinds
+    answer = next(e for e in events if e.kind == "assistant_text")
+    assert answer.text == "die antwort"
