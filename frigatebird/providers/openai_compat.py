@@ -127,7 +127,7 @@ class OpenRouterProvider(OpenAICompatProvider):
         super().__init__(
             base_url="https://openrouter.ai/api/v1",
             api_key=key,
-            model=model or "openai/gpt-4o-mini",
+            model=model or "z-ai/glm-5.3-flash",  # Default: das Modell des bauleitenden Agents :)
         )
         # Optional, aber von OpenRouter empfohlen: App-Attribution.
         # (OpenRouter zeigt dann im Dashboard, welche App die Anfragen gestellt hat.)
